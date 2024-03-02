@@ -30,7 +30,7 @@ const run = async () => {
       };
 
    
-    // const insertResultSingle = await users.insertOne({ name: "jack", age: 77 });
+    // const insertResultSingle = await tasks.insertOne({ task: "internet", completed: true });
 
     // const insertResultMany = await users.insertMany([{name: "Bob", age: 41},{name: "Jeanne", age: 6}, {name: "Peter", age: 41}])users
 
@@ -44,19 +44,35 @@ const run = async () => {
     //     {task: "vats vaccine rdv", completed: false}
     // ])
 
+    const insertResultMany = await tasks.insertMany([
+        {task: "plan france", completed: true}, 
+        {task: "jump", completed: true}, 
+        {task: "work", completed: true}
+    ])
     
-    const getResultSingle = await tasks.findOne({task: "internet"}, options)
-         console.log(getResultSingle)
 
-      const getResultMany = await tasks.find({completed: false}).toArray()
-      const getResultCount = await tasks.countDocuments({completed: true})
+    await tasks.find().toArray()
+    .then((result) => {
+        console.log(result)
+    })
 
-      console.log(getResultMany)
-      console.log(getResultCount)
+    await tasks.findOne({task: "work"})
+    .then(result => console.log(result))
+    .catch(error => console.log(error))
+    
+    await tasks.countDocuments({completed: true})
+    .then(result => console.log(result))
+    .catch(error => console.log(error))
+
+    await tasks.find({completed: true}).toArray()
+    .then(result => console.log(result))
+    .catch(error => console.log(error))
+
+    console.log(await tasks.find().toArray())
       
-    //   for await (const doc of getResultMany) {
-    //     console.dir(doc);
-    //   }
+
+    await tasks.deleteMany({completed: true})
+    .then(async () => console.log(await tasks.find().toArray()))
          
     } finally {
         await client.close()

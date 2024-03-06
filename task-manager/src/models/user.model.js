@@ -61,12 +61,22 @@ userSchema.statics.findByCredentials = async (email, password) => {
 
 userSchema.methods.generateAuthToken = async function () {
     const user = this
-    const token = jwt.sign({_id: user.id.toString()}, 'jsonsecret')
+    const token = jwt.sign({_id: user.id.toString() }, 'jsonsecret')
 
     user.tokens = user.tokens.concat({token})
     await user.save()
 
     return token
+}
+
+userSchema.methods.toJSON = function (){
+    const user = this
+    const userObject = user.toObject()
+
+    delete userObject.password
+    delete userObject.tokens
+
+    return userObject
 }
 
 //hash pain text password before saving

@@ -19,15 +19,24 @@ router.post("/tasks", auth, async (req, res) => {
 })
 
 
-//fetch all tasksof a user
+//fetch all tasks of a user
+//?completed=true
 router.get("/tasks", auth, async (req, res) => {
+    let completed;
+
     try {
-        const tasks = await Task.find({owner: req.user._id})
+        if(req.query.completed === 'true'){
+            completed = true
+        } else if(req.query.completed === 'false'){
+            completed = false
+        }
+
+        const tasks = await Task.find({ owner: req.user._id, completed})
         if (tasks.length == 0) return res.status(404).send()
         res.send(tasks)
 
     } catch (error) {
-        res.status(500).send()
+        res.status(500).send(error)
     }
 
 })
@@ -37,7 +46,7 @@ router.get("/tasks/:id", auth, async (req, res) => {
     const _id = req.params.id
 
     try {
-        const task = await Task.findOne({ _id, owner: req.user._id})
+        const task = await Task.findOne({ _id, owner: req.user._id })
         if (!task) return res.status(404).send()
         res.send(task)
     } catch (error) {
@@ -50,11 +59,11 @@ router.patch("/tasks/:id", auth, async (req, res) => {
     const updates = Object.keys(req.body)
     const allowedUpdates = ["description", "completed"]
     const isValidOperation = updates.every(update => allowedUpdates.includes(update))
-    if(!isValidOperation) return res.status(400).send({error: "invalid updates"})
+    if (!isValidOperation) return res.status(400).send({ error: "invalid updates" })
 
     try {
-        const task = await Task.findOne({ _id: req.params.id, owner: req.user._id})
-        if(!task) return res.status(404).send()
+        const task = await Task.findOne({ _id: req.params.id, owner: req.user._id })
+        if (!task) return res.status(404).send()
 
         updates.forEach(update => task[update] = req.body[update])
         await task.save()
@@ -69,9 +78,9 @@ router.patch("/tasks/:id", auth, async (req, res) => {
 router.delete("/tasks/:id", auth, async (req, res) => {
     try {
 
-        const task = await Task.findOneAndDelete({ _id: req.params.id, owner: req.user._id})
+        const task = await Task.findOneAndDelete({ _id: req.params.id, owner: req.user._id })
 
-        if(!task) return res.status(404).send()
+        if (!task) return res.status(404).send()
 
         res.send(task)
     } catch (error) {

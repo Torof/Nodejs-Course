@@ -20,19 +20,43 @@ router.post("/tasks", auth, async (req, res) => {
 
 
 //fetch all tasks of a user
-//?completed=true
+//?completed=true||false
+//?limit
+//?skip
+//?sortBy
 router.get("/tasks", auth, async (req, res) => {
-    let completed;
 
     try {
-        if(req.query.completed === 'true'){
-            completed = true
-        } else if(req.query.completed === 'false'){
-            completed = false
+        const { completed, limit, skip, sortBy } = req.query
+        let tasks = []
+        const sort = {}
+
+        if (sortBy) {
+            const parts = req.query.sortBy.split(":")
+            sort[parts[0]] = parts[1] === "desc" ? -1 : 1
         }
 
-        const tasks = await Task.find({ owner: req.user._id, completed})
+        const options = {
+            limit: parseInt(limit),
+            skip: parseInt(skip),
+            sort
+        }
+
+        switch (completed) {
+            case 'true':
+                tasks = await Task.find({ owner: req.user._id, completed: true }, null, options)
+                break
+            case 'false':
+                tasks = await Task.find({ owner: req.user._id, completed: false }, null, options)
+                break
+            default:
+                tasks = await Task.find({ owner: req.user._id }, null, options)
+        }
+
         if (tasks.length == 0) return res.status(404).send()
+
+
+
         res.send(tasks)
 
     } catch (error) {

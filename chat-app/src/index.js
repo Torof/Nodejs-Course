@@ -17,9 +17,18 @@ io.on('connection', (socket) => {
     console.log('new web socket connection')
 
     socket.emit('message', 'welcome!')
+    socket.broadcast.emit('message', ' a new user has joined')
 
     socket.on('sendMessage', (message) => {
-        io.emit('message',message)
+        io.emit('message', message)
+    })
+
+    socket.on('sendLocation', (coords) => {
+        io.emit('message', `https://google.com/maps?q=${coords.latitude},${coords.longitude}`)
+    })
+
+    socket.on('disconnect', () => {
+        io.emit('message', 'a user has left')
     })
 })
 

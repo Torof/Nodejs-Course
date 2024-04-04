@@ -2,6 +2,7 @@ const path = require('path')
 const http = require('http')
 const express = require('express')
 const socketio = require('socket.io')
+const Filter = require('bad-words')
 
 const app = express()
 const server = http.createServer(app)
@@ -19,8 +20,15 @@ io.on('connection', (socket) => {
     socket.emit('message', 'welcome!')
     socket.broadcast.emit('message', ' a new user has joined')
 
-    socket.on('sendMessage', (message) => {
+    socket.on('sendMessage', (message, callback) => {
+        const filter = new Filter()
+
+        if(filter.isProfane(message)){
+            return callback('profanity')
+        }
+
         io.emit('message', message)
+        callback()
     })
 
     socket.on('sendLocation', (coords) => {
